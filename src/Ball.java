@@ -9,6 +9,7 @@ public class Ball {
 	private Image ball;
 	private Random r = new Random();
 	private int x, y, xx, yy;
+	int wall;
 	
 	public Ball() {
 		
@@ -17,15 +18,16 @@ public class Ball {
 		
 		x = r.nextInt(600);
 		y = r.nextInt(400);
+		 
 	
 	}
 	public void move(){
 		x += xx;
 		y += yy;
-		if (x < 7){ x = 7; }
-		if(x >880){ x = 880; }
-		if(y < 45){ y = 45;}
-		if(y > 385){ y = 385; }
+		if (x < 11){ x = 11; }
+		if(x >962){ x = 962; }
+		if(y < 49){ y = 49;}
+		if(y > 468){ y = 468; }
 	}
 	public int getX(){
 		return x;

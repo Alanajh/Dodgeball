@@ -267,10 +267,7 @@ public class Main extends JPanel implements Runnable{
 		
 		if (image != null){
 			if(state == STATE.MENU){
-			
-				/*g.setColor(Color.BLACK);
-				g.fillRect(5, 5, 1033, 540);
-				*/
+				/// ----- GAME MENU ------- ////////
 				this.drawFrame(courtImage, g, 10, 150, 1, 0, 1040, 400);
 				g.setFont(fnt);
 				g.setColor(Color.ORANGE);
@@ -281,7 +278,7 @@ public class Main extends JPanel implements Runnable{
 				g.drawImage(helpButtonImg, 960, 510, this); //  57 x 29
 			}
 			if(state == STATE.SCOREBOARD){
-				
+				/// ------ SCOREBOARD SCREEN ----- ////////
 				Font fntScore = new Font("serif", Font.BOLD, 52);
 				g.setFont(fntScore);
 				g.fillRect(5, 5, 1033, 540);
@@ -309,12 +306,7 @@ public class Main extends JPanel implements Runnable{
 			drawFrame(dodgeballImg, g, xJock, yJock, 1, 1, 84, 80);
 			drawFrame(dodgeballImg, g, xHip, yHip, 1, 2, 84, 80); 
 			
-			/*g.setColor(Color.ORANGE);
-			g.fillOval(courtImage.getWidth(null)/2, courtImage.getHeight(null)/2, 55, 55); // ball image
-			g.setColor(Color.BLACK);
-			g.drawOval(courtImage.getWidth(null)/2, courtImage.getHeight(null)/2, 55, 55); // outline to ball image
-			*/
-			g.drawImage(ball.getImage(), ball.getX(), ball.getY(), this);
+			g.drawImage(ball.getImage(), ball.getX(), ball.getY(), 64, 64, this);
 			}
 	}
 }
