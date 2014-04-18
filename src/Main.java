@@ -259,14 +259,7 @@ public class Main extends JPanel implements Runnable{
 	
 		ball.move();
 		}
-		if (state == STATE.PAUSE){
-			
-		}
-		///  COLLISION DETECTION   //////////
-		if(nerdRect.intersects(jockRect) || nerdRect.intersects(hipRect)){
-			System.out.println("hit");
-		}
-		
+		if (state == STATE.PAUSE){}
 				
 		frameCount++;
 		if(frameCount > frameDelay){
@@ -347,7 +340,7 @@ public class Main extends JPanel implements Runnable{
 				g.fillRoundRect(995, 495, 10, 25, 0, 0);
 				}
 				if(state == STATE.PAUSE){
-					pauseOn = true;
+				
 				g.setColor(Color.BLUE);
 				g.fillRoundRect(972, 490, 40, 35, 5, 500);
 				g.setColor(Color.WHITE);
