@@ -28,6 +28,7 @@ public class Ball {
 		if(x >962){ x = 962; }
 		if(y < 49){ y = 49;}
 		if(y > 468){ y = 468; }
+		
 	}
 	public int getX(){
 		return x;

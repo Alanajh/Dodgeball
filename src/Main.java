@@ -11,6 +11,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Random;
@@ -52,8 +53,8 @@ public class Main extends JPanel implements Runnable{
 	
 	private int xNerd = ranNerd.nextInt(600) + 25 ;
 	private int yNerd = ranNerd.nextInt(450) + 25 ;
-	private double xNerdSpeed = - 1;
-	private double yNerdSpeed = - 1;
+	private double xNerdSpeed = 1;
+	private double yNerdSpeed = 1;
 	private int nerdScoreX = 20;
 	private int nerdScoreY = 10;
 	private int nerdCount = 0;
@@ -82,23 +83,19 @@ public class Main extends JPanel implements Runnable{
 	private int rY = yHip + 16;
 	
 	//// ---- collision detection rectangles ---- ///////
-	private Rectangle nerdRect = new Rectangle(rectX, rectY, 64, 53);
-	private Rectangle jockRect = new Rectangle(recX, recY, 40, 65);
-	private Rectangle hipRect = new Rectangle(rX, rY, 39, 61);
+	private Rectangle nerdRect;
+	private Rectangle jockRect;
+	private Rectangle hipRect;
 	/// ---- pause button states ----  ///////
 	public static boolean pauseOn = false;
 	
-	private int scoreX = 300;
-	private int scoreY = 100;
-	private float scoreSpeed = -1;
-		
+	private Scoreboard score;
+	private Menu menu;
+	///  ----- ball collision detection ----- /////
 	private Ball ball;
-	
-	private int xBounds;
-	private int yBounds;
+	private RoundRectangle2D ballRect;
 	
 	public static STATE state;
-	private Font fnt = new Font("serif", Font.BOLD, 112);
 
 	public static enum STATE {MENU, PLAY, SCOREBOARD, PAUSE}
 	///////   CONSTRUCTOR   ///////////////////
@@ -122,7 +119,13 @@ public class Main extends JPanel implements Runnable{
 		this.addKeyListener(new TAdapter());
 		setFocusable(true);
 		
+		nerdRect = new Rectangle(rectX, rectY, 40, 53);
+		jockRect = new Rectangle(recX, recY, 40, 65);
+		hipRect = new Rectangle(rX, rY, 39, 61);
+		
 		ball = new Ball();
+		score = new Scoreboard();
+		menu = new Menu();
 		
 		animator = new Thread(this);
 		animator.start();
@@ -171,14 +174,12 @@ public class Main extends JPanel implements Runnable{
 	}
 	public void update(){
 		//if (!gameOver){}
-		
 	}
 	public void render(){
 		/////   draw current frame to an image buffer
 		if(image == null){   ////// create the buffer
 			image = createImage(WIDTH, HEIGHT);
 			if (image == null){
-				//System.out.println("The games images are null");
 				return;
 			}else
 				g = image.getGraphics();
@@ -247,16 +248,7 @@ public class Main extends JPanel implements Runnable{
 			yHip = 460;
 		}
 		
-		scoreX += scoreSpeed;
-		if(scoreX < 200){ 
-			scoreSpeed = -scoreSpeed; 
-			scoreX = 200;
-		}
-		if(scoreX > 400){ 
-			scoreSpeed = -scoreSpeed; 
-			scoreX = 400;
-		}
-	
+		score.update();
 		ball.move();
 		}
 		if (state == STATE.PAUSE){}
@@ -286,28 +278,19 @@ public class Main extends JPanel implements Runnable{
 		if (image != null){
 			if(state == STATE.MENU){
 				/// ----- GAME MENU ------- ////////
-				this.drawFrame(courtImage, g, 10, 150, 1, 0, 1040, 400);
-				g.setFont(fnt);
-				g.setColor(Color.ORANGE);
-				g.drawString("DODGEBALL", 150, 130);
-				
-				g.drawImage(playButtonImg, 200, 200, this); // 159 x 83
-				g.drawImage(scoreboardButtonImg, 400, 200, this); /// 344 x 83
-				g.drawImage(helpButtonImg, 960, 510, this); //  57 x 29
+				menu.paint(g);
 			}
 			if(state == STATE.SCOREBOARD){
 				/// ------ SCOREBOARD SCREEN ----- ////////
-				Font fntScore = new Font("serif", Font.BOLD, 52);
-				g.setFont(fntScore);
-				g.fillRect(5, 5, 1033, 540);
-				
-				g.setColor(Color.ORANGE);
-				g.drawString("SCOREBOARD!!", scoreX, scoreY);
-				
-				g.drawImage(menuButtonImg, 865, 510, this); ///  70 x  28
-				g.drawImage(helpButtonImg, 960, 510, this); //  57 x 29
+				score.paint(g);
+				g.drawImage(score.getMenu(), 865, 510, null);
+				g.drawImage(score.getHelp(), 960, 510, null);
+
 			}
 			if(state == STATE.PLAY || state == STATE.PAUSE){
+				Rectangle nerd = new Rectangle(xNerd + 20, yNerd + 12, 40, 53);
+				Rectangle jock = new Rectangle(xJock + 20, yJock + 6, 40, 65);
+				Rectangle hip = new Rectangle(xHip + 18, yHip + 14, 39, 61);
 				
 				g.drawImage(image, 0, 0, this);
 			
@@ -323,14 +306,37 @@ public class Main extends JPanel implements Runnable{
 				drawFrame(scoreImage, g, hipScoreX, hipScoreY, 1, 2, 50, 50); // hipster
 			
 				drawFrame(dodgeballImg, g, xNerd, yNerd, 1, 0, 84, 80);
-				g.drawRect(xNerd + 5, yNerd + 12, nerdRect.width, nerdRect.height);
 				drawFrame(dodgeballImg, g, xJock, yJock, 1, 1, 84, 80);
-				g.drawRect(xJock + 20, yJock + 6, jockRect.width, jockRect.height);
 				drawFrame(dodgeballImg, g, xHip, yHip, 1, 2, 84, 80); 
-				g.drawRect(xHip + 18, yHip + 14, hipRect.width, hipRect.height);
-			
+				
 				g.drawImage(ball.getImage(), ball.getX(), ball.getY(), 64, 64, this);
-			
+				g.drawRoundRect(ball.getX() + 3, ball.getY() + 3, 56, 57, 80, 80);
+				
+				if(nerd.intersects(hip)){
+					g.drawString("COLLISION!!!", 200, 200);
+					Random r = new Random();
+					int direction = r.nextInt(4);
+					switch(direction){
+					
+					case 1:
+						xNerdSpeed = -xNerdSpeed;
+						xHipSpeed = -xHipSpeed;
+						System.out.println("Case 1");
+					case 2:
+						yNerdSpeed = -yNerdSpeed;
+						yHipSpeed = -yHipSpeed;
+						System.out.println("Case 2");
+					case 3:
+						xNerdSpeed = -xNerdSpeed;
+						yHipSpeed = -yHipSpeed;
+						System.out.println("Case 3");
+					case 4:
+						yNerdSpeed = -yNerdSpeed;
+						xHipSpeed = -xHipSpeed;
+						System.out.println("Case 4");
+					}
+				}
+					
 				///// PAUSE BUTTON  /////
 				if(state == STATE.PLAY){
 				g.setColor(Color.BLACK);
@@ -340,7 +346,6 @@ public class Main extends JPanel implements Runnable{
 				g.fillRoundRect(995, 495, 10, 25, 0, 0);
 				}
 				if(state == STATE.PAUSE){
-				
 				g.setColor(Color.BLUE);
 				g.fillRoundRect(972, 490, 40, 35, 5, 500);
 				g.setColor(Color.WHITE);
@@ -357,20 +362,6 @@ public class Main extends JPanel implements Runnable{
 		public void keyPressed(KeyEvent e){
 			ball.keyPressed(e);
 		}
-	}
-	//// rectangle to implement collision detection  ///////
-	public Rectangle Bounds(){
-		return new Rectangle(xBounds, yBounds, 84, 80);
-	}
-	public void collision(){
-		Rectangle rec1 = new Rectangle(xNerd, yNerd, 84, 80);
-		Rectangle rec2 = new Rectangle(xJock, yJock, 84, 80);
-		
-		if(rec1.intersects(rec2)){
-			collision = true;
-			System.out.println("Collision");
-		}else
-			collision = false;
 	}
 	// ----- draw images from spritesheet ---///////
 	public void drawFrame(Image source, Graphics g2, int x, int y, int cols, int frame, int width, int height){

@@ -21,7 +21,7 @@ public class MouseInput implements MouseListener {
 		
 		if (mx >= 200 && mx <= 359 && my >= 200 && my <= 283){
 				///PLAY BUTTON //////
-				try {Thread.sleep(100);} catch (InterruptedException e1) {e1.printStackTrace();}
+				try {Thread.sleep(200);} catch (InterruptedException e1) {e1.printStackTrace();}
 				Main.state = Main.STATE.PLAY;
 			}
 		if (mx >= 400 && mx <= 744 && my >= 200 && my <= 283){
