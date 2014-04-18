@@ -3,7 +3,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-
 public class MouseInput implements MouseListener {
 
 	private Graphics g;
@@ -35,7 +34,17 @@ public class MouseInput implements MouseListener {
 		}if (mx >= 865 && mx <= 935){
 			if (my >= 510 && my <= 538){ Main.state = Main.STATE.MENU; } /// MENU BUTTON  //////
 		}
-	}
+		if(mx >= 972 && mx <= 1012){
+			if(my >= 490 && my <= 525){
+			
+				Main.state = Main.STATE.PAUSE;
+				Main.pauseOn = true;
+	
+				}// close y-axis
+			}//close x- axis
+		}
+	
+	
 
 	/*
 	 * 	g.drawImage(helpButtonImg, 960, 510, this); //  57 x 29

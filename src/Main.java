@@ -7,14 +7,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+
 
 import javax.swing.JPanel;
 
@@ -24,6 +24,7 @@ public class Main extends JPanel implements Runnable{
 	private Thread animator;
 	private boolean running = false;
 	private boolean gameOver = true;
+	private boolean collision = false;
 	
 	////   size of panel  && and other gameboard stuff  ///////////
 	private int WIDTH = 1024;
@@ -73,17 +74,33 @@ public class Main extends JPanel implements Runnable{
 	private int hipScoreY = 10;
 	private int hipCount = 0;
 	
+	private int rectX = xNerd + 5; 
+	private int rectY = yNerd + 12;
+	private int recX = xJock + 20;
+	private int recY = yJock + 5;
+	private int rX = xHip + 18;
+	private int rY = yHip + 16;
+	
+	//// ---- collision detection rectangles ---- ///////
+	private Rectangle nerdRect = new Rectangle(rectX, rectY, 64, 53);
+	private Rectangle jockRect = new Rectangle(recX, recY, 40, 65);
+	private Rectangle hipRect = new Rectangle(rX, rY, 39, 61);
+	/// ---- pause button states ----  ///////
+	public static boolean pauseOn = false;
+	
 	private int scoreX = 300;
 	private int scoreY = 100;
 	private float scoreSpeed = -1;
 		
 	private Ball ball;
-	private KeyInput key = new KeyInput();;
+	
+	private int xBounds;
+	private int yBounds;
 	
 	public static STATE state;
 	private Font fnt = new Font("serif", Font.BOLD, 112);
 
-	public static enum STATE {MENU, PLAY, SCOREBOARD, END}
+	public static enum STATE {MENU, PLAY, SCOREBOARD, PAUSE}
 	///////   CONSTRUCTOR   ///////////////////
 	public Main(){
 		//  create game components here //////////
@@ -133,11 +150,12 @@ public class Main extends JPanel implements Runnable{
 	}
 	public void stopGame(){
 		/////   if the user stops the game   ///////////
+	
 		running = false;
+		
 	}
 	public void run() {
-		///   repeatedly update the update, render and sleep methods. ///////
-		//Thread animation = Thread.currentThread();
+	
 		running = true;
 		while(running){
 			update(); // update game state
@@ -173,24 +191,24 @@ public class Main extends JPanel implements Runnable{
 		
 		/// action happens here. //////
 		// NERD ACTIONS //
+	
+		if(state == STATE.PLAY){
+			xNerd += xNerdSpeed;
+			yNerd += yNerdSpeed;
 		
-		
-		xNerd += xNerdSpeed;
-		yNerd += yNerdSpeed;
-		
-		if(xNerd < 5){
-			xNerdSpeed = -xNerdSpeed;
-			xNerd = 5;
-		}if(xNerd > 959){
-			xNerdSpeed = -xNerdSpeed;
-			xNerd = 959;
-		}if(yNerd < 30){
-			yNerdSpeed = -yNerdSpeed;
-			yNerd = 30;
-		}if(yNerd > 465){
-			yNerdSpeed = -yNerdSpeed;
-			yNerd = 465;
-		}
+			if(xNerd < 5){
+				xNerdSpeed = -xNerdSpeed;
+				xNerd = 5;
+			}if(xNerd > 959){
+				xNerdSpeed = -xNerdSpeed;
+				xNerd = 959;
+			}if(yNerd < 30){
+				yNerdSpeed = -yNerdSpeed;
+				yNerd = 30;
+			}if(yNerd > 465){
+				yNerdSpeed = -yNerdSpeed;
+				yNerd = 465;
+			}
 		
 		/////  JOCK ACTIONS  ////
 		xJock += xJockSpeed;
@@ -229,7 +247,6 @@ public class Main extends JPanel implements Runnable{
 			yHip = 460;
 		}
 		
-		
 		scoreX += scoreSpeed;
 		if(scoreX < 200){ 
 			scoreSpeed = -scoreSpeed; 
@@ -239,8 +256,16 @@ public class Main extends JPanel implements Runnable{
 			scoreSpeed = -scoreSpeed; 
 			scoreX = 400;
 		}
+	
 		ball.move();
+		}
+		if (state == STATE.PAUSE){
+			
+		}
 		///  COLLISION DETECTION   //////////
+		if(nerdRect.intersects(jockRect) || nerdRect.intersects(hipRect)){
+			System.out.println("hit");
+		}
 		
 				
 		frameCount++;
@@ -289,25 +314,47 @@ public class Main extends JPanel implements Runnable{
 				g.drawImage(menuButtonImg, 865, 510, this); ///  70 x  28
 				g.drawImage(helpButtonImg, 960, 510, this); //  57 x 29
 			}
-			if(state == STATE.PLAY){
-			g.drawImage(image, 0, 0, this);
+			if(state == STATE.PLAY || state == STATE.PAUSE){
+				
+				g.drawImage(image, 0, 0, this);
 			
-			g.setFont(gameFont);
-			g.setColor(Color.BLACK);
-			g.drawString("NERDS: \t " + nerdCount, 80, 35);
-			g.drawString("JOCKS: \t " + jockCount, 280, 35);
-			g.drawString("HIPSTERS: \t " + hipCount, 480, 35);
+				g.setFont(gameFont);
+				g.setColor(Color.BLACK);
+				g.drawString("NERDS: \t " + nerdCount, 80, 35);
+				g.drawString("JOCKS: \t " + jockCount, 280, 35);
+				g.drawString("HIPSTERS: \t " + hipCount, 480, 35);
 			
-			drawFrame(scoreImage, g, nerdScoreX, nerdScoreY, 1, 0, 50, 46); // nerd
-			drawFrame(scoreImage, g, jockScoreX, jockScoreY, 1, 1, 50, 48); // jock
-			drawFrame(scoreImage, g, hipScoreX, hipScoreY, 1, 2, 50, 50); // hipster
+				//// ----- SCORE IMAGES  ------ //////
+				drawFrame(scoreImage, g, nerdScoreX, nerdScoreY, 1, 0, 50, 46); // nerd
+				drawFrame(scoreImage, g, jockScoreX, jockScoreY, 1, 1, 50, 48); // jock
+				drawFrame(scoreImage, g, hipScoreX, hipScoreY, 1, 2, 50, 50); // hipster
 			
-			drawFrame(dodgeballImg, g, xNerd, yNerd, 1, 0, 84, 80);
-			drawFrame(dodgeballImg, g, xJock, yJock, 1, 1, 84, 80);
-			drawFrame(dodgeballImg, g, xHip, yHip, 1, 2, 84, 80); 
+				drawFrame(dodgeballImg, g, xNerd, yNerd, 1, 0, 84, 80);
+				g.drawRect(xNerd + 5, yNerd + 12, nerdRect.width, nerdRect.height);
+				drawFrame(dodgeballImg, g, xJock, yJock, 1, 1, 84, 80);
+				g.drawRect(xJock + 20, yJock + 6, jockRect.width, jockRect.height);
+				drawFrame(dodgeballImg, g, xHip, yHip, 1, 2, 84, 80); 
+				g.drawRect(xHip + 18, yHip + 14, hipRect.width, hipRect.height);
 			
-			g.drawImage(ball.getImage(), ball.getX(), ball.getY(), 64, 64, this);
+				g.drawImage(ball.getImage(), ball.getX(), ball.getY(), 64, 64, this);
+			
+				///// PAUSE BUTTON  /////
+				if(state == STATE.PLAY){
+				g.setColor(Color.BLACK);
+				g.fillRoundRect(972, 490, 40, 35, 5, 500);
+				g.setColor(Color.WHITE);
+				g.fillRoundRect(980, 495, 10, 25, 0, 0);
+				g.fillRoundRect(995, 495, 10, 25, 0, 0);
+				}
+				if(state == STATE.PAUSE){
+					pauseOn = true;
+				g.setColor(Color.BLUE);
+				g.fillRoundRect(972, 490, 40, 35, 5, 500);
+				g.setColor(Color.WHITE);
+				g.fillRoundRect(980, 495, 10, 25, 0, 0);
+				g.fillRoundRect(995, 495, 10, 25, 0, 0);
 			}
+		}
 	}
 }
 	public class TAdapter extends KeyAdapter{
@@ -318,7 +365,21 @@ public class Main extends JPanel implements Runnable{
 			ball.keyPressed(e);
 		}
 	}
-	
+	//// rectangle to implement collision detection  ///////
+	public Rectangle Bounds(){
+		return new Rectangle(xBounds, yBounds, 84, 80);
+	}
+	public void collision(){
+		Rectangle rec1 = new Rectangle(xNerd, yNerd, 84, 80);
+		Rectangle rec2 = new Rectangle(xJock, yJock, 84, 80);
+		
+		if(rec1.intersects(rec2)){
+			collision = true;
+			System.out.println("Collision");
+		}else
+			collision = false;
+	}
+	// ----- draw images from spritesheet ---///////
 	public void drawFrame(Image source, Graphics g2, int x, int y, int cols, int frame, int width, int height){
 			int fx = (frame % cols) * width;
 			int fy = (frame / cols) * height;
